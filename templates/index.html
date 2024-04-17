@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #007bff;
+        }
+        #chat-container {
+            width: 80%;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        #chat-output {
+            padding: 10px;
+            overflow-y: scroll;
+            height: 300px;
+            background-color: #fff;
+        }
+        #chat-form {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f1f3f5;
+        }
+        #user-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #send-button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot</h1>
+    <div id="chat-container">
+        <div id="chat-output"></div>
+        <form id="chat-form">
+            <input type="text" id="user-input" name="user_input" placeholder="Type your message...">
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatOutput = document.getElementById('chat-output');
+        const chatForm = document.getElementById('chat-form');
+        const userInputField = document.getElementById('user-input');
+
+        chatForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userInput = userInputField.value.trim();
+
+            if (userInput === '') {
+                return;
+            }
+
+            appendMessage('user', userInput);
+            userInputField.value = '';
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'user_input': userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botResponse = data.response;
+                appendMessage('bot', botResponse);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                appendMessage('bot', 'Sorry, an error occurred.');
+            });
+        });
+
+        function appendMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add(sender === 'bot' ? 'bot-message' : 'user-message');
+            messageElement.textContent = message;
+            chatOutput.appendChild(messageElement);
+            chatOutput.scrollTop = chatOutput.scrollHeight;
+        }
+    </script>
+</body>
+</html>
